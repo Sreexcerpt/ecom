@@ -1,3 +1,1329 @@
+
+
+// const express = require("express");
+// const mongoose = require("mongoose");
+// const cors = require("cors");
+// const Razorpay = require("razorpay");
+// // const axios = require('axios');
+// const nodemailer = require("nodemailer");
+// const bodyParser = require("body-parser");
+//  const path = require("path");
+// const multer = require('multer');
+// const fs = require('fs').promises
+// const app = express();
+// // const https = require('https')
+// const jwt = require('jsonwebtoken')
+// // const Razorpay = require("razorpay");
+// // const util = require('util');
+// // const unlink = util.promisify(fs.unlink);
+// const port = process.env.PORT || 8081;
+// app.use(cors());
+// app.use(bodyParser.json());
+// const SECRET_KEY = "your_secret_key";
+// app.use('/uploads', express.static('uploads'));
+// app.use(express.json()); // To parse JSON request body
+
+// mongoose
+//   .connect('mongodb+srv://root:1234@cluster0.ofeco44.mongodb.net/Ecomm')
+//   .then(() => console.log("MongoDB connected successfully"))
+//   .catch((err) => console.error("MongoDB connection error:", err));
+
+// const categorySchema = new mongoose.Schema({
+//   categoryId: { type: Number, required: true, unique: true },
+//   categoryName: { type: String, required: true },
+//   categoryCode: { type: String, required: true },
+
+//   Products: [
+//     {
+//       productName: { type: String, required: true },
+//       productCode: { type: String, required: true },
+//     },
+//   ],
+
+// });
+
+
+// const Category = mongoose.model('Category', categorySchema);
+// const getNextCategoryId = async () => {
+//   const lastCategory = await Category.findOne().sort({ categoryId: -1 });
+//   return lastCategory ? lastCategory.categoryId + 1 : 1;
+// };
+
+// // Helper to get next category ID
+// app.get('/api/next-category-id', async (req, res) => {
+//   try {
+//     const nextCategoryId = await getNextCategoryId();
+//     res.status(200).json({ categoryId: nextCategoryId });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to fetch next category ID', details: error.message });
+//   }
+// });
+
+
+// // Route to add a category
+// app.post('/api/add-category', async (req, res) => {
+//   try {
+//     const { categoryName, categoryCode } = req.body;
+// console.log("reqbody", req.body)
+//     if (!categoryName) {
+//       return res.status(400).json({ error: 'Category name is required' });
+//     }
+
+//     const categoryId = await getNextCategoryId();
+//     console.log("catid", categoryId)
+//     const newCategory = new Category({ categoryId, categoryName, categoryCode });
+//     await newCategory.save();
+// console.log("newcat", newCategory)
+//     res.status(201).json({ message: 'Category saved successfully', categoryId });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to save category', details: error.message });
+//     console.error('Error saving category:', error);
+//   }
+// });
+// // Get all categories
+// app.get('/api/categories', async (req, res) => {
+//   try {
+//     const categories = await Category.find({}, 'categoryId categoryName categoryCode'); // Fetch only necessary fields
+//     res.status(200).json(categories);
+//     console.log("cat", categories)
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Error fetching categories' });
+//   }
+// });
+
+
+// app.post('/api/add-productname', async (req, res) => {
+//   const { categoryId, productName, productCode } = req.body;
+//   console.log("ho", req.body)
+
+//   try {
+//     const category = await Category.findOne({ categoryId });
+//     if (!category) {
+//       return res.status(404).json({ message: 'Category not found' });
+//     }
+
+//     category.Products.push({ productName, productCode });
+//     await category.save();
+
+//     res.status(200).json({ message: 'Subcategory added successfully!' });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Error adding subcategory' });
+//   }
+// });
+
+// app.get('/api/products/:categoryId', async (req, res) => {
+//   try {
+//     const category = await Category.findOne({ categoryId: req.params.categoryId });
+
+//     if (category && category.Products) {
+//       res.status(200).json(category.Products);
+//       console.log("hi", category.Products)// Send the subcategories array
+//     } else {
+//       res.status(404).json({ message: 'No subcategories found' });
+//     }
+//   } catch (error) {
+//     console.error('Error fetching subcategories:', error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// });
+
+
+// app.get('/api/edit/categories', async (req, res) => {
+//   try {
+//     const categories = await Category.find();
+//     res.json(categories);
+//   } catch (err) {
+//     res.status(500).send(err.message);
+//   }
+// });
+
+// // API to edit a category
+// app.put('/api/category/:id', async (req, res) => {
+//   const { id } = req.params;
+//   const { categoryName, categoryCode } = req.body;
+
+//   try {
+//     await Category.findByIdAndUpdate(id, { categoryName, categoryCode });
+//     res.json({ message: 'Category updated successfully!' });
+//   } catch (err) {
+//     res.status(500).send(err.message);
+//   }
+// });
+
+// // API to delete a category
+// app.delete('/api/category/:id', async (req, res) => {
+//   const { id } = req.params;
+
+//   try {
+//     await Category.findByIdAndDelete(id);
+//     res.json({ message: 'Category deleted successfully!' });
+//   } catch (err) {
+//     res.status(500).send(err.message);
+//   }
+// });
+
+// const transporter = nodemailer.createTransport({
+//   host: "smtp-mail.outlook.com",
+//   port: 587,
+//   secure: false, // TLS
+//   auth: {
+//     user: "Support@terraclenz.com",
+//     pass: "czhrjxhfdvymnftg",
+//   },
+//   tls: {
+//     ciphers: "SSLv3",
+//   },
+// });
+// const productSchema = new mongoose.Schema({
+//   productId: { type: String }, // Unique product identifier
+//   ratings: { type: [Number], default: [] }, // Array of ratings (1-5 stars)
+//   reviews: [{
+//     review: { type: String, required: true },
+//     rating: { type: Number, required: true },
+//     name: { type: String },
+//     email: { type: String },
+//     createdAt: { type: Date, default: Date.now }
+//   }],
+//   categoryId: { type: Number, required: true },
+//   aromas: [{
+//     name: String,
+//     images: [String], // Array of image filenames
+//     sizes: [{
+//       size: { type: String, required: true },
+//       unit: { type: String, required: true },
+//       quantity: { type: Number, required: true },
+//       price: { type: Number, required: true },
+//       offer: { type: Number, default: 0 },
+//       sellingPrice: {
+//         type: Number,
+//         required: true,
+//         default: function () {
+//           return this.price - (this.price * (this.offer / 100));
+//         }
+//       },
+//       sizeId: { type: String }
+//     }]
+//   }],
+//   caption: { type: String },
+//   description: { type: String },
+//   uses: { type: String },
+//    keyFeatures: { type: String },
+//   ingredients: { type: String },
+//   howToUse: { type: String },
+// customerReviews: { type: String },
+//   productName: { type: String, required: true },
+//   productCode: { type: String, required: true },
+//   categoryCode: { type: String, required: true },
+//   categoryName: { type: String, required: true },
+   
+// }, { timestamps: true });
+
+// productSchema.pre('save', async function (next) {
+//   const product = this;
+
+//   // Generate base productId
+//   const productId = `${product.categoryCode.toUpperCase()}-${product.productCode.toUpperCase()}`;
+
+//   // Set the base productId
+//   product.productId = productId;
+
+//   // Process each aroma and its sizes
+//   if (product.aromas && product.aromas.length > 0) {
+//     product.aromas.forEach(aroma => {
+//       // Generate aroma letters for the sizeId
+//       const words = aroma.name.split(' ');
+//       let aromaLetters;
+
+//       if (words.length === 1) {
+//         // For single word, take first and last letter
+//         const word = words[0];
+//         aromaLetters = word.charAt(0).toUpperCase() + word.charAt(word.length - 1).toUpperCase();
+//       } else {
+//         // For multiple words, take first letter of each word
+//         aromaLetters = words.map(word => word.charAt(0).toUpperCase()).join('');
+//       }
+
+//       // Generate sizeIds for each size in this aroma
+//       if (aroma.sizes && aroma.sizes.length > 0) {
+//         aroma.sizes.forEach(sizeObj => {
+//           // Combine size and unit for the sizeId
+//           const formattedSize = `${sizeObj.size}${sizeObj.unit}`.toUpperCase().replace(/\s+/g, '');
+//           sizeObj.sizeId = `${productId}-${aromaLetters}-${formattedSize}`;
+//         });
+//       }
+//     });
+//   }
+
+//   next();
+// });
+
+
+
+// const Product = mongoose.model("Productsforterra", productSchema);
+
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, 'uploads/');
+//   },
+//   filename: function (req, file, cb) {
+//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+//     cb(null, uniqueSuffix + path.extname(file.originalname));
+//   }
+// });
+
+// const fileFilter = (req, file, cb) => {
+//   if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+//     return cb(new Error('Only image files are allowed!'), false);
+//   }
+//   cb(null, true);
+// };
+
+// const upload = multer({
+//   storage: storage,
+//   fileFilter: fileFilter,
+//   limits: {
+//     fileSize: 5 * 1024 * 1024 // 5MB
+//   }
+// });
+
+// // Helper function to clean up uploaded files
+// const cleanupFiles = async (files) => {
+//   if (!files) return;
+
+//   const filesToDelete = Array.isArray(files) ? files : Object.values(files).flat();
+//   for (const file of filesToDelete) {
+//     try {
+//       await fs.unlink(file.path);
+//     } catch (err) {
+//       console.error('Error deleting file:', err);
+//     }
+//   }
+// };
+
+// app.post('/api/add-product', upload.fields([
+//   { name: 'aromaImages', maxCount: 50 },
+//   { name: 'images', maxCount: 10 }
+// ]), async (req, res) => {
+//   try {
+//     console.log('Received form data:', req.body);
+//     console.log('Received files:', req.files);
+
+//     const aromasMetadata = JSON.parse(req.body.aromasMetadata || '[]');
+
+//     const aromaImages = req.files.aromaImages || [];
+//     const mainImages = req.files.images || [];
+
+//     let currentImageIndex = 0;
+//     const aromas = aromasMetadata.map(aroma => {
+//       const aromaImageCount = aroma.imageCount;
+//       const aromaImageFiles = aromaImages.slice(currentImageIndex, currentImageIndex + aromaImageCount);
+//       currentImageIndex += aromaImageCount;
+
+//       return {
+//         name: aroma.name,
+//         images: aromaImageFiles.map(file => `/uploads/${file.filename}`),
+//         sizes: aroma.sizes
+//       };
+//     });
+
+//     // ✅ Create the product document with NEW FIELDS
+//     const product = new Product({
+//       productName: req.body.productName,
+//       productCode: req.body.productCode,
+//       categoryId: req.body.categoryId,
+//       categoryName: req.body.categoryName,
+//       categoryCode: req.body.categoryCode,
+//       caption: req.body.caption,
+//       description: req.body.description,
+//       uses: req.body.uses,
+//       aromas: aromas,
+//       mainImages: mainImages.map(file => `/uploads/${file.filename}`),
+
+//       // ✅ Add these lines
+//       keyFeatures: req.body.keyFeatures,
+//       ingredients: req.body.ingredients,
+//       howToUse: req.body.howToUse,
+//       customerReviews: req.body.customerReviews 
+//     });
+
+//     await product.save();
+
+//     res.json({
+//       message: 'Product added successfully',
+//       productId: product._id
+//     });
+//   } catch (error) {
+//     // Cleanup uploaded files on error
+//     if (req.files) {
+//       Object.values(req.files).flat().forEach(file => {
+//         fs.unlink(file.path, err => {
+//           if (err) console.error('Error deleting file:', err);
+//         });
+//       });
+//     }
+
+//     console.error('Error saving product:', error);
+//     res.status(500).json({
+//       error: 'Failed to save product',
+//       details: error.message
+//     });
+//   }
+// });
+// app.get('/api/preview/products/:id', async (req, res) => {
+//   try {
+//     const product = await Product.findById(req.params.id);
+//     if (!product) {
+//       return res.status(404).json({ message: 'server Product not found' });
+//     }
+//     res.json(product);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+// app.get('/api/products', async (req, res) => {
+//   try {
+//     const products = await Product.find();
+//     res.json(products);
+//     console.log("products", products)
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+
+// // Get single product
+// app.get('/api/products/:id', async (req, res) => {
+//   try {
+//     const product = await Product.findById(req.params.id);
+//     if (!product) {
+//       return res.status(404).json({ message: 'server Product not found' });
+//     }
+//     res.json(product);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
+
+
+
+// app.post("/api/login", async (req, res) => {
+//   const { identifier, password } = req.body;
+
+//   try {
+//     const user = await User.findOne({
+//       $or: [{ email: identifier }, { mob_number: identifier }],
+//     });
+
+//     if (!user) {
+//       return res.status(400).json({ message: "User does not exist" });
+//     }
+
+//     else if (user.password !== password) {
+//       return res.status(401).json({ message: "Invalid credentials" });
+//     }
+//     else {
+
+//       const token = jwt.sign(
+//         {
+//           firstname: user.firstname,
+//           lastname: user.lastname,
+//           email: user.email,
+//           id: user._id,
+//           phoneNumber: user.mob_number,
+//           role: user.role
+//         },
+//         SECRET_KEY,
+//         { expiresIn: "1h" }
+//       );
+//       res.status(200).json({ message: "Login successful", token: token });
+//     }
+//   } catch (error) {
+//     console.error("Login error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// const userSchema = new mongoose.Schema({
+//   firstname: String,
+//   lastname: String,
+//   mob_number: String,
+//   email: String,
+//   password: String,
+//   role: { type: String, default: 'user' },
+//    profileImage: String, // <-- Add this
+  
+// });
+
+// const User = mongoose.model("User", userSchema);
+// app.get("/api/products/:productId/stock", async (req, res) => {
+//   const { productId } = req.params;
+//   const { sizeId } = req.query;
+
+//   console.log("Received stock request:", { productId, sizeId });
+
+//   try {
+//     if (!sizeId) {
+//       console.log("Missing sizeId");
+//       return res.status(400).json({ error: "sizeId is required" });
+//     }
+
+//     const product = await Product.findOne({ productId });
+//     if (!product) {
+//       console.log("Product not found");
+//       return res.status(404).json({ error: "Product not found" });
+//     }
+
+//     let foundSize = null;
+
+//     for (const aroma of product.aromas) {
+//       const match = aroma.sizes.find((s) => s.sizeId === sizeId);
+//       if (match) {
+//         foundSize = match;
+//         break;
+//       }
+//     }
+
+//     if (!foundSize) {
+//       console.log("Size not found");
+//       return res.status(404).json({ error: "Size not found for this product" });
+//     }
+
+//     console.log("Returning stock:", foundSize.quantity);
+//     return res.status(200).json({ stock: foundSize.quantity });
+//   } catch (err) {
+//     console.error("Stock fetch error:", err);
+//     return res.status(500).json({ error: err.message || "Server error" });
+//   }
+// });
+
+
+// const razorpay = new Razorpay({
+//   key_id: "rzp_test_qUmhUFElBiSNIs",
+//   key_secret: "wsBV1ts8yJPld9JktATIdOiS",
+
+
+// });
+// app.post("/api/create-order", async (req, res) => {
+//   const { amount } = req.body;
+
+//   const options = {
+//     amount: amount, // Amount in paise
+//     currency: "INR",
+//     receipt: "receipt#1",
+//   };
+
+//   try {
+//     const order = await razorpay.orders.create(options);
+//     res.json({ order_id: order.id });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: "Something went wrong" });
+//   }
+// });
+
+
+
+// // const orderSchema = new mongoose.Schema({
+// //   orderId: {
+// //     type: String,
+// //     required: true,
+// //     unique: true
+// //   },
+// //   ShipmentId: {
+// //     type: String,
+// //   },
+// //   AWBcode: {
+// //     type: String,
+// //   },
+// //   shiporderId: { type: String, },
+// //   orderDate: {
+// //     type: Date,
+// //     default: Date.now
+// //   },
+// //   customerId: {
+// //     type: String,
+// //     required: true
+// //   },
+// //   customerDetails: {
+// //     shippingAddress: {
+// //       fullName: String,
+// //       email: String,
+// //       phoneNumber: String,
+// //       addressLine1: String,
+// //       addressLine2: String,
+// //       city: String,
+// //       state: String,
+// //       pinCode: String,
+// //       country: String
+// //     },
+// //     billingAddress: {
+// //       fullName: String,
+// //       email: String,
+// //       phoneNumber: String,
+// //       addressLine1: String,
+// //       addressLine2: String,
+// //       city: String,
+// //       state: String,
+// //       pinCode: String,
+// //       country: String
+// //     }
+// //   },
+// //   products: [{
+// //     productId: {
+// //       type: String,
+// //       required: true
+// //     },
+// //     sizeId: {
+// //       type: String,
+// //       required: true
+// //     },
+// //     productName: {
+// //       type: String,
+// //       required: true
+// //     },
+// //     price: {
+// //       type: Number,
+// //       required: true
+// //     },
+// //     quantity: {
+// //       type: Number,
+// //       required: true,
+// //       min: 1
+// //     },
+// //     size: String,
+// //     image: String
+// //   }],
+// //   paymentDetails: {
+// //   productPrice: {
+// //     type: Number,
+// //     required: true
+// //   },
+// //   totalAmount: {
+// //     type: Number,
+// //     required: true
+// //   },
+// //   status: {
+// //     type: String,
+// //     enum: ['pending', 'completed', 'failed', 'refunded'],
+// //     default: 'pending'
+// //   },
+// //   paymentId: {
+// //     type: String,
+// //     required: true
+// //   },
+// //   paymentSignature: {
+// //     type: String,
+// //     required: true
+// //   },
+// //   gstNumber: {
+// //     type: String,
+// //     default: null
+// //   }
+// // },
+
+// //   orderStatus: {
+// //     type: String,
+// //     enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+// //     default: 'pending'
+// //   },
+// //   deliveryStatus: { type: String, default: "pending" },
+// //   createdAt: {
+// //     type: Date,
+// //     default: Date.now
+// //   },
+// //   updatedAt: {
+// //     type: Date,
+// //     default: Date.now
+// //   }
+// // }, {
+// //   timestamps: true
+// // });
+
+// // // Keep only essential indexes
+// // orderSchema.index({ customerId: 1, createdAt: -1 });
+
+// // // Pre-save middleware to update timestamps
+// // orderSchema.pre('save', function (next) {
+// //   this.updatedAt = new Date();
+// //   next();
+// // });
+
+// // // Useful virtual for total items
+// // orderSchema.virtual('totalItems').get(function () {
+// //   return this.products.reduce((sum, product) => sum + product.quantity, 0);
+// // });
+
+
+
+// // const Order = mongoose.model('Order', orderSchema);
+
+
+
+
+// // app.post('/api/orders/create', async (req, res) => {
+// //   // Start a session for transaction
+// //   const session = await mongoose.startSession();
+// //   session.startTransaction();
+
+// //   try {
+// //     // Extract order details from request body
+// //     const {
+// //       orderId,
+// //       orderDate,
+// //       customerId,
+// //       customerDetails,
+// //       products,
+// //       paymentDetails,
+// //       orderStatus
+// //     } = req.body;
+
+// //     console.log('Starting order creation with products:', JSON.stringify(products, null, 2));
+
+// //     // Create new order in database
+// //     const newOrder = new Order({
+// //       orderId,
+// //       orderDate,
+// //       customerId,
+// //       customerDetails: {
+// //         shippingAddress: customerDetails.shippingAddress,
+// //         billingAddress: customerDetails.billingAddress
+// //       },
+// //       products: products.map(product => ({
+// //         productId: product.productId,
+// //         sizeId: product.sizeId,
+// //         productName: product.productName,
+// //         price: product.price,
+// //         quantity: product.quantity,
+// //         size: product.size,
+// //         image: product.image
+// //       })),
+// //       paymentDetails: {
+// //         productPrice: paymentDetails.productPrice,
+// //         totalAmount: paymentDetails.totalAmount,
+// //         status: paymentDetails.status,
+// //         paymentId: paymentDetails.paymentId,
+// //         paymentSignature: paymentDetails.paymentSignature,
+// //         gstNumber:paymentDetails.gstNumber,
+// //       },
+// //       orderStatus,
+// //       createdAt: new Date(),
+// //       updatedAt: new Date()
+// //     });
+
+// //     // Save the order with session
+// //     const savedOrder = await newOrder.save({ session });
+// //     console.log('Order saved successfully:', savedOrder.orderId);
+
+// //     // Update product quantities
+// //     console.log('Starting quantity updates for products...');
+
+// //     for (const product of products) {
+// //       console.log(`Processing product: ${product.productId}, size: ${product.sizeId}, quantity: ${product.quantity}`);
+
+// //       // Find the product
+// //       const productDoc = await Product.findOne({
+// //         productId: product.productId
+// //       }).session(session);
+// //       console.log("findproducts", productDoc);
+// //       if (!productDoc) {
+// //         console.error(`Product not found: ${product.productId}`);
+// //         throw new Error(`Product not found: ${product.productId}`);
+// //       }
+
+// //       // Find the size index
+// //       // const sizeIndex = productDoc.sizes.findIndex(s => s.sizeId === product.sizeId);
+// //       const aromaContainingSize = productDoc.aromas?.find(aroma =>
+// //         aroma.sizes?.some(size => size.sizeId === product.sizeId)
+// //       );
+
+// //       // Find the size index within that aroma
+// //       const sizeIndex = aromaContainingSize
+// //         ? aromaContainingSize.sizes.findIndex(s => s.sizeId === product.sizeId)
+// //         : -1;
+// //       if (sizeIndex === -1) {
+// //         console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
+// //         console.log('Available sizes:', JSON.stringify(productDoc.sizes, null, 2));
+// //         throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
+// //       }
+
+// //       // const currentQuantity = productDoc.sizes[sizeIndex].quantity;
+// //       // const newQuantity = currentQuantity - product.quantity;
+
+// //       // console.log(`Updating quantity for product ${product.productId}:`);
+// //       // console.log(`- Current quantity: ${currentQuantity}`);
+// //       // console.log(`- Reducing by: ${product.quantity}`);
+// //       // console.log(`- New quantity will be: ${newQuantity}`);
+
+// //       // if (newQuantity < 0) {
+// //       //   throw new Error(
+// //       //     `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
+// //       //     `Available: ${currentQuantity}, Requested: ${product.quantity}`
+// //       //   );
+// //       // }
+
+// //       // // Update the quantity
+// //       // productDoc.sizes[sizeIndex].quantity = newQuantity;
+
+// //       // // Save the updated product
+// //       // await productDoc.save({ session });
+// //       // console.log(`Successfully updated quantity for product ${product.productId}`);
+// //       if (sizeIndex === -1) {
+// //         console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
+// //         console.log('Available sizes:', JSON.stringify(aromaContainingSize.sizes, null, 2));
+// //         throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
+// //       }
+
+// //       // Now you can update the quantity as before
+// //       const currentQuantity = aromaContainingSize.sizes[sizeIndex].quantity;
+// //       const newQuantity = currentQuantity - product.quantity;
+
+// //       console.log(`Updating quantity for product ${product.productId}:`);
+// //       console.log(`- Current quantity: ${currentQuantity}`);
+// //       console.log(`- Reducing by: ${product.quantity}`);
+// //       console.log(`- New quantity will be: ${newQuantity}`);
+
+// //       if (newQuantity < 0) {
+// //         throw new Error(
+// //           `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
+// //           `Available: ${currentQuantity}, Requested: ${product.quantity}`
+// //         );
+// //       }
+
+// //       // Update the quantity
+// //       aromaContainingSize.sizes[sizeIndex].quantity = newQuantity;
+
+// //       // Save the updated product
+// //       await productDoc.save({ session });
+// //       console.log(`Successfully updated quantity for product ${product.productId}`);
+// //     }
+
+// //     // Commit the transaction
+// //     await session.commitTransaction();
+// //     console.log('Transaction committed successfully');
+
+// //     // Send email confirmation (commented out as in original code)
+// //     // await sendOrderConfirmationEmail(savedOrder);
+// //     const customerEmail = savedOrder.customerDetails.billingAddress.email;
+// //     if (customerEmail) {
+// //       await sendOrderConfirmationEmail(savedOrder, customerEmail);
+// //     }
+// //     res.status(201).json({
+// //       success: true,
+// //       orderId: savedOrder.orderId,
+// //       message: 'Order created successfully'
+// //     });
+
+// //   } catch (error) {
+// //     console.error('=== Order Creation Failed ===');
+// //     console.error('Error message:', error.message);
+// //     console.error('Error stack:', error.stack);
+
+// //     // Rollback the transaction
+// //     await session.abortTransaction();
+// //     console.log('Transaction rolled back due to error');
+
+// //     res.status(500).json({
+// //       success: false,
+// //       message: 'Failed to create order',
+// //       error: error.message
+// //     });
+
+// //   } finally {
+// //     // End the session
+// //     await session.endSession();
+// //     console.log('Session ended');
+// //   }
+// // });
+
+// const orderSchema = new mongoose.Schema({
+//   orderId: {
+//     type: String,
+//     required: true,
+//     unique: true
+//   },
+//   ShipmentId: {
+//     type: String,
+//   },
+//   AWBcode: {
+//     type: String,
+//   },
+//   shiporderId: { 
+//     type: String, 
+//   },
+//   orderDate: {
+//     type: Date,
+//     default: Date.now
+//   },
+//   customerId: {
+//     type: String,
+//     required: true
+//   },
+//   customerDetails: {
+//     shippingAddress: {
+//       fullName: String,
+//       email: String,
+//       phoneNumber: String,
+//       addressLine1: String,
+//       addressLine2: String,
+//       city: String,
+//       area: String, // Added area field
+//       state: String,
+//       pinCode: String,
+//       country: String
+//     },
+//     billingAddress: {
+//       fullName: String,
+//       email: String,
+//       phoneNumber: String,
+//       addressLine1: String,
+//       addressLine2: String,
+//       city: String,
+//       state: String,
+//       pinCode: String,
+//       country: String
+//     }
+//   },
+//   products: [{
+//     productId: {
+//       type: String,
+//       required: true
+//     },
+//     sizeId: {
+//       type: String,
+//       required: true
+//     },
+//     productName: {
+//       type: String,
+//       required: true
+//     },
+//     price: {
+//       type: Number,
+//       required: true
+//     },
+//     quantity: {
+//       type: Number,
+//       required: true,
+//       min: 1
+//     },
+//     size: String,
+//     image: String,
+//     weight: Number // Added weight field
+//   }],
+//   shipping: { // Added shipping object
+//     courier: String,
+//     weight: Number,
+//     cost: Number,
+//     estimatedDays: Number
+//   },
+//   paymentDetails: {
+//     productPrice: {
+//       type: Number,
+//       required: true
+//     },
+//     shippingCost: { // Added shippingCost field
+//       type: Number,
+//       default: 0
+//     },
+//     totalAmount: {
+//       type: Number,
+//       required: true
+//     },
+//     status: {
+//       type: String,
+//       enum: ['pending', 'completed', 'failed', 'refunded'],
+//       default: 'pending'
+//     },
+//     paymentId: {
+//       type: String,
+//       required: true
+//     },
+//     paymentSignature: {
+//       type: String,
+//       required: true
+//     },
+//     gstNumber: {
+//       type: String,
+//       default: null
+//     }
+//   },
+//   orderStatus: {
+//     type: String,
+//     enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+//     default: 'pending'
+//   },
+//   deliveryStatus: { 
+//     type: String, 
+//     default: "pending" 
+//   },
+//   createdAt: {
+//     type: Date,
+//     default: Date.now
+//   },
+//   updatedAt: {
+//     type: Date,
+//     default: Date.now
+//   }
+// }, {
+//   timestamps: true
+// });
+
+// // Keep only essential indexes
+// orderSchema.index({ customerId: 1, createdAt: -1 });
+
+// // Pre-save middleware to update timestamps
+// orderSchema.pre('save', function (next) {
+//   this.updatedAt = new Date();
+//   next();
+// });
+
+// // Useful virtual for total items
+// orderSchema.virtual('totalItems').get(function () {
+//   return this.products.reduce((sum, product) => sum + product.quantity, 0);
+// });
+
+// const Order = mongoose.model('Order', orderSchema);
+
+// app.post('/api/orders/create', async (req, res) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const {
+//       orderId,
+//       orderDate,
+//       customerId,
+//       customerDetails,
+//       products,
+//       shipping, // Added shipping
+//       paymentDetails,
+//       orderStatus
+//     } = req.body;
+
+//     console.log('Starting order creation with products:', JSON.stringify(products, null, 2));
+
+//     // Create new order in database
+//     const newOrder = new Order({
+//       orderId,
+//       orderDate,
+//       customerId,
+//       customerDetails: {
+//         shippingAddress: customerDetails.shippingAddress,
+//         billingAddress: customerDetails.billingAddress
+//       },
+//       products: products.map(product => ({
+//         productId: product.productId,
+//         sizeId: product.sizeId,
+//         productName: product.productName,
+//         price: product.price,
+//         quantity: product.quantity,
+//         size: product.size,
+//         image: product.image,
+//         weight: product.weight || 0 // Add weight
+//       })),
+//       shipping: { // Add shipping object
+//         courier: shipping?.courier || '',
+//         weight: shipping?.weight || 0,
+//         cost: shipping?.cost || 0,
+//         estimatedDays: shipping?.estimatedDays || 0
+//       },
+//       paymentDetails: {
+//         productPrice: paymentDetails.productPrice,
+//         shippingCost: paymentDetails.shippingCost || 0, // Add shippingCost
+//         totalAmount: paymentDetails.totalAmount,
+//         status: paymentDetails.status,
+//         paymentId: paymentDetails.paymentId,
+//         paymentSignature: paymentDetails.paymentSignature,
+//         gstNumber: paymentDetails.gstNumber,
+//       },
+//       orderStatus,
+//       createdAt: new Date(),
+//       updatedAt: new Date()
+//     });
+
+//     // Save the order with session
+//     const savedOrder = await newOrder.save({ session });
+//     console.log('Order saved successfully:', savedOrder.orderId);
+
+//     // Update product quantities
+//     console.log('Starting quantity updates for products...');
+
+//     for (const product of products) {
+//       console.log(`Processing product: ${product.productId}, size: ${product.sizeId}, quantity: ${product.quantity}`);
+
+//       const productDoc = await Product.findOne({
+//         productId: product.productId
+//       }).session(session);
+      
+//       console.log("findproducts", productDoc);
+      
+//       if (!productDoc) {
+//         console.error(`Product not found: ${product.productId}`);
+//         throw new Error(`Product not found: ${product.productId}`);
+//       }
+
+//       const aromaContainingSize = productDoc.aromas?.find(aroma =>
+//         aroma.sizes?.some(size => size.sizeId === product.sizeId)
+//       );
+
+//       const sizeIndex = aromaContainingSize
+//         ? aromaContainingSize.sizes.findIndex(s => s.sizeId === product.sizeId)
+//         : -1;
+        
+//       if (sizeIndex === -1) {
+//         console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
+//         console.log('Available sizes:', JSON.stringify(aromaContainingSize?.sizes, null, 2));
+//         throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
+//       }
+
+//       const currentQuantity = aromaContainingSize.sizes[sizeIndex].quantity;
+//       const newQuantity = currentQuantity - product.quantity;
+
+//       console.log(`Updating quantity for product ${product.productId}:`);
+//       console.log(`- Current quantity: ${currentQuantity}`);
+//       console.log(`- Reducing by: ${product.quantity}`);
+//       console.log(`- New quantity will be: ${newQuantity}`);
+
+//       if (newQuantity < 0) {
+//         throw new Error(
+//           `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
+//           `Available: ${currentQuantity}, Requested: ${product.quantity}`
+//         );
+//       }
+
+//       aromaContainingSize.sizes[sizeIndex].quantity = newQuantity;
+//       await productDoc.save({ session });
+//       console.log(`Successfully updated quantity for product ${product.productId}`);
+//     }
+
+//     // Commit the transaction
+//     await session.commitTransaction();
+//     console.log('Transaction committed successfully');
+
+//     // Send email confirmation
+//     const customerEmail = savedOrder.customerDetails.billingAddress.email;
+//     if (customerEmail) {
+//       try {
+//         await sendOrderConfirmationEmail(savedOrder, customerEmail);
+//         console.log('Email sent successfully');
+//       } catch (emailError) {
+//         console.error('Email sending failed, but order was created:', emailError);
+//         // Don't throw error - order is already saved
+//       }
+//     }
+
+//     res.status(201).json({
+//       success: true,
+//       orderId: savedOrder.orderId,
+//       order: savedOrder, // Return full order object
+//       message: 'Order created successfully'
+//     });
+
+//   } catch (error) {
+//     console.error('=== Order Creation Failed ===');
+//     console.error('Error message:', error.message);
+//     console.error('Error stack:', error.stack);
+
+//     await session.abortTransaction();
+//     console.log('Transaction rolled back due to error');
+
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to create order',
+//       error: error.message
+//     });
+
+//   } finally {
+//     await session.endSession();
+//     console.log('Session ended');
+//   }
+// });
+
+// async function sendOrderConfirmationEmail(order, customerEmail) {
+//   // Create a transporter for sending the email
+//   // Fetch product details for each ordered item
+//   console.log("mailorder:",order)
+//   const products = await Promise.all(
+//     order.products.map(async (item) => {
+//       const product = await Product.findOne({productId:item.productId});
+
+
+//       return {
+//         name: product.productName,
+
+//         quantity: item.quantity,
+//         price: item.price,
+//         // image: `http://localhost:5000/uploads/${product.images[0].fileName}`,
+//         image: `https://terraclenz.com/uploads/${product.image}`,
+//       };
+//     })
+//   );
+
+//   // Email content
+//   // Calculate the total price for each item (Price + Refundable Price) and total refundable amount
+//   let totalAmount = 0;
+
+//   let orderTotal = 0; // Total for all products in the order
+
+
+//   // Check delivery type and add delivery charge accordingly
+
+  
+
+  
+//   products.forEach((item) => {
+//     const productTotal = (item.price ) * item.quantity; // Correct total for each product
+//     orderTotal += productTotal; // Add to the overall order total
+//     totalAmount += item.price * item.quantity; // Total without refundable price
+//   });
+
+
+
+
+//   const mailOptions = {
+//     from: '',
+//     to: customerEmail,
+//     subject: `Order Confirmation - ${order.orderId}`,
+//     html: `
+//       <table width="60%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: none;">
+//         <tr>
+//           <td style="background-color:rgb(29, 78, 37); padding: 20px;">
+//             <h1 style="color:rgb(255, 255, 255); margin: 0;">Thank you for your order, ${order.customerDetails.billingAddress.fullName}!</h1>
+//           </td>
+//         </tr>
+
+//         <p>Hello ${order.customerDetails.billingAddress.fullName} ,</p>
+//         <p>Thank you for booking with us. For any query WhatsApp us on  7022519222.</p>
+
+
+
+//         <tr>
+//           <td style="padding: 20px;">
+//             <p>Your order has been successfully placed with the following details:</p>
+//             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #0D3B66;">
+//               <tr style="background-color: #0D3B66; color: white;">
+//                 <th style="padding: 10px; text-align: left;">Order ID</th>
+//                 <th style="padding: 10px; text-align: left;">Order Date</th>
+//                 <th style="padding: 10px; text-align: left;">Payment Status</th>
+
+//               </tr>
+//               <tr>
+//                 <td style="padding: 10px; border-bottom: 1px solid #0D3B66;">${order.orderId}</td>
+//                 <td style="padding: 10px; border-bottom: 1px solid #0D3B66;">${new Date(order.orderDate).toLocaleDateString()}</td>
+//                 <td style="padding: 10px; border-bottom: 1px solid #0D3B66;">${order.paymentDetails.status}</td>
+
+
+                
+//               </tr>
+//             </table>
+//             <h2 style="color: #0D3B66;">Ordered Products:</h2>
+//             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #0D3B66;">
+//               <tr style="background-color: #0D3B66; color: white;">
+//                 <th style="padding: 10px; text-align: left;">Image</th>
+//                 <th style="padding: 10px; text-align: left;">Product</th>
+                
+//                 <th style="padding: 10px; text-align: right;">Quantity</th>
+//                 <th style="padding: 10px; text-align: right;">Price</th>
+//               </tr>
+//               ${products
+//                 .map(
+//                   (item) => `
+//                     <tr>
+//                       <td style="padding: 10px; border-bottom: 1px solid #0D3B66;"><img src="${item.image}" alt="${item.name}" style="max-width: 100px;"></td>
+//                       <td style="padding: 10px; border-bottom: 1px solid #0D3B66;">${item.name}</td>
+                     
+//                       <td style="padding: 10px; border-bottom: 1px solid #0D3B66; text-align: right;">${item.quantity}</td>
+//                       <td style="padding: 10px; border-bottom: 1px solid #0D3B66; text-align: right;">₹${item.price} <br> <span style="font-size: 12px;">(Refundable) ₹${item.refundablePrice}</span></td>
+//                     </tr>
+//                   `)
+//                 .join('')}
+
+
+
+
+
+                
+//             </table>
+            
+//             <h2 style="color: #0D3B66;">Order Summary:</h2>
+//             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; border: 1px solid #0D3B66;">
+//               <tr style="background-color: #0D3B66; color: white;">
+//                 <th style="padding: 10px; text-align: left;">Product</th>
+//                 <th style="padding: 10px; text-align: right;">Price</th>
+            
+//                 <th style="padding: 10px; text-align: right;">Total</th>
+//               </tr>
+             
+//                 ${products
+//                   .map(
+//                     (item) => `
+//                       <tr>
+//                         <td style="padding: 10px; border-bottom: 1px solid #0D3B66;">${item.productName}</td>
+//                         <td style="padding: 10px; border-bottom: 1px solid #0D3B66; text-align: right;">₹${item.price}</td>
+
+//                         <td style="padding: 10px; border-bottom: 1px solid #0D3B66; text-align: right;">₹${item.price  * item.quantity}</td>
+//                       </tr>
+//                     `)
+//                   .join('')}
+               
+                
+//                 <tr>
+//                   <td colspan="3" style="padding: 10px; text-align: right; font-weight: bold;">Total Amount:</td>
+//                   <td style="padding: 10px; text-align: right; font-weight: bold;">₹${orderTotal}</td>
+//                 </tr>
+                
+//             </table>
+//             <p>We will notify you once your order is dispatched.</p>
+//             <p>Thank you for shopping with us!</p>
+//           </td>
+//         </tr>
+//       </table>
+//     `,
+//   };
+
+//   // Send the email
+//   try {
+//     await transporter.sendMail(mailOptions);
+//     console.log('Order confirmation email sent successfully');
+//   } catch (error) {
+//     console.error('Error sending email:', error);
+//   }
+// }
+
+// app.get("/api/orders/:orderId", async (req, res) => {
+//   try {
+//     const order = await Order.findOne({ orderId: req.params.orderId });
+//     if (!order) return res.status(404).json({ message: "Order not found" });
+//     res.status(200).json(order);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error fetching order", error });
+//   }
+// });
+// app.get('/api/order/:id', async (req, res) => {
+//   try {
+//     const orderId = req.params.id;
+//     console.log(orderId)
+
+//     const order = await Order.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({ error: 'Order not found' });
+//     }
+
+//     res.json(order);
+//     console.log("order", order)
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+// app.listen(port, () => {
+//   console.log(`Server is running on port: ${port}`);
+// });
+
+
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -20,7 +1346,7 @@ app.use('/uploads', express.static('uploads'));
 app.use(express.json()); // To parse JSON request body
 // MongoDB Connection
 mongoose
-  .connect('mongodb+srv://excerpttech:excerpttech2021@cluster0.5vdeszu.mongodb.net/Terra')
+  .connect('mongodb+srv://root:1234@cluster0.ofeco44.mongodb.net/Ecomm')
   .then(() => console.log("MongoDB connected successfully"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -32,6 +1358,31 @@ const FLASK_URL = 'https://api.etpl.ai/api/chat';
 // const FLASK_URL = 'https://6e65-34-16-186-74.ngrok-free.app/api/chat';
 // const FLASK_URL = 'https://friendly-enigma-7v5xr5v49767cpp5g-5000.app.github.dev/api/chat';
 let stoken = null;
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+const fileFilter = (req, file, cb) => {
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
+    return cb(new Error('Only image files are allowed!'), false);
+  }
+  cb(null, true);
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
+
 const authenticate = async () => {
   try {
     const response = await axios.post(`${SHIPROCKET_BASE_URL}/auth/login`, {
@@ -201,7 +1552,7 @@ const categorySchema = new mongoose.Schema({
   categoryId: { type: Number, required: true, unique: true },
   categoryName: { type: String, required: true },
   categoryCode: { type: String, required: true },
-
+ categoryImage: { type: String }, 
   Products: [
     {
       productName: { type: String, required: true },
@@ -230,23 +1581,54 @@ app.get('/api/next-category-id', async (req, res) => {
 
 
 // Route to add a category
-app.post('/api/add-category', async (req, res) => {
+// app.post('/api/add-category', async (req, res) => {
+//   try {
+//     const { categoryName, categoryCode } = req.body;
+
+//     if (!categoryName) {
+//       return res.status(400).json({ error: 'Category name is required' });
+//     }
+
+//     const categoryId = await getNextCategoryId();
+//     const newCategory = new Category({ categoryId, categoryName, categoryCode });
+//     await newCategory.save();
+
+//     res.status(201).json({ message: 'Category saved successfully', categoryId });
+//   } catch (error) {
+//     res.status(500).json({ error: 'Failed to save category', details: error.message });
+//   }
+// });
+
+app.post('/api/add-category', upload.single("categoryImage"), async (req, res) => {
   try {
     const { categoryName, categoryCode } = req.body;
 
-    if (!categoryName) {
-      return res.status(400).json({ error: 'Category name is required' });
+    if (!categoryName || !categoryCode) {
+      return res.status(400).json({ error: 'All fields are required' });
     }
 
     const categoryId = await getNextCategoryId();
-    const newCategory = new Category({ categoryId, categoryName, categoryCode });
+
+    const newCategory = new Category({
+      categoryId,
+      categoryName,
+      categoryCode,
+      categoryImage: req.file ? req.file.path : null, // <--- Save image path
+    });
+
     await newCategory.save();
 
-    res.status(201).json({ message: 'Category saved successfully', categoryId });
+    res.status(201).json({ 
+      message: 'Category saved successfully', 
+      categoryId,
+      imagePath: newCategory.categoryImage 
+    });
+
   } catch (error) {
     res.status(500).json({ error: 'Failed to save category', details: error.message });
   }
 });
+
 // Get all categories
 app.get('/api/categories', async (req, res) => {
   try {
@@ -475,30 +1857,8 @@ const Product = mongoose.model("Productsforterra", productSchema);
 //   }
 // });
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
-  }
-});
 
-const fileFilter = (req, file, cb) => {
-  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
-    return cb(new Error('Only image files are allowed!'), false);
-  }
-  cb(null, true);
-};
 
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB
-  }
-});
 
 // Helper function to clean up uploaded files
 const cleanupFiles = async (files) => {
@@ -2875,125 +4235,125 @@ app.get('/api/orders/years', async (req, res) => {
 });
 
 // Get analytics data for different periods
-app.get('/api/analytics/:period/:year?/:month?', async (req, res) => {
-  try {
-    const { period, year, month } = req.params;
+// app.get('/api/analytics/:period/:year?/:month?', async (req, res) => {
+//   try {
+//     const { period, year, month } = req.params;
     
-    // Set date range based on the period
-    let startDate, endDate;
-    let groupBy;
+//     // Set date range based on the period
+//     let startDate, endDate;
+//     let groupBy;
     
-    if (period === 'week') {
-      // Last 7 days
-      endDate = new Date();
-      startDate = new Date();
-      startDate.setDate(startDate.getDate() - 7);
-      groupBy = { $dayOfMonth: '$orderDate' };
-    } else if (period === 'month' && year && month) {
-      // Specific month of specific year
-      startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
-      endDate = new Date(parseInt(year), parseInt(month), 0);
-      groupBy = { $dayOfMonth: '$orderDate' };
-    } else if (period === 'year' && year) {
-      // Specific year
-      startDate = new Date(parseInt(year), 0, 1);
-      endDate = new Date(parseInt(year), 11, 31);
-      groupBy = { $month: '$orderDate' };
-    } else {
-      return res.status(400).json({ error: 'Invalid period parameters' });
-    }
+//     if (period === 'week') {
+//       // Last 7 days
+//       endDate = new Date();
+//       startDate = new Date();
+//       startDate.setDate(startDate.getDate() - 7);
+//       groupBy = { $dayOfMonth: '$orderDate' };
+//     } else if (period === 'month' && year && month) {
+//       // Specific month of specific year
+//       startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+//       endDate = new Date(parseInt(year), parseInt(month), 0);
+//       groupBy = { $dayOfMonth: '$orderDate' };
+//     } else if (period === 'year' && year) {
+//       // Specific year
+//       startDate = new Date(parseInt(year), 0, 1);
+//       endDate = new Date(parseInt(year), 11, 31);
+//       groupBy = { $month: '$orderDate' };
+//     } else {
+//       return res.status(400).json({ error: 'Invalid period parameters' });
+//     }
     
-    // Get orders within the date range
-    const orders = await Order.find({
-      orderDate: { $gte: startDate, $lte: endDate }
-    });
+//     // Get orders within the date range
+//     const orders = await Order.find({
+//       orderDate: { $gte: startDate, $lte: endDate }
+//     });
     
-    // Process orders data for charts
-    const ordersByDate = {};
-    const revenueByDate = {};
-    const productsByDate = {};
+//     // Process orders data for charts
+//     const ordersByDate = {};
+//     const revenueByDate = {};
+//     const productsByDate = {};
     
-    // Define labels based on the period
-    let labels = [];
-    if (period === 'week' || (period === 'month' && year && month)) {
-      // Days of month or week
-      const daysInMonth = period === 'month' ? new Date(parseInt(year), parseInt(month), 0).getDate() : 7;
-      labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-    } else if (period === 'year' && year) {
-      // Months of year
-      labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    }
+//     // Define labels based on the period
+//     let labels = [];
+//     if (period === 'week' || (period === 'month' && year && month)) {
+//       // Days of month or week
+//       const daysInMonth = period === 'month' ? new Date(parseInt(year), parseInt(month), 0).getDate() : 7;
+//       labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+//     } else if (period === 'year' && year) {
+//       // Months of year
+//       labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+//     }
     
-    // Initialize data structures with zeros
-    labels.forEach((label, i) => {
-      const index = period === 'year' ? i + 1 : label;
-      ordersByDate[index] = 0;
-      revenueByDate[index] = 0;
-      productsByDate[index] = 0;
-    });
+//     // Initialize data structures with zeros
+//     labels.forEach((label, i) => {
+//       const index = period === 'year' ? i + 1 : label;
+//       ordersByDate[index] = 0;
+//       revenueByDate[index] = 0;
+//       productsByDate[index] = 0;
+//     });
     
-    // Process orders
-    orders.forEach(order => {
-      const orderDate = new Date(order.orderDate);
-      let dateKey;
+//     // Process orders
+//     orders.forEach(order => {
+//       const orderDate = new Date(order.orderDate);
+//       let dateKey;
       
-      if (period === 'week' || (period === 'month' && year && month)) {
-        dateKey = orderDate.getDate();
-      } else if (period === 'year' && year) {
-        dateKey = orderDate.getMonth() + 1; // 1-12 for months
-      }
+//       if (period === 'week' || (period === 'month' && year && month)) {
+//         dateKey = orderDate.getDate();
+//       } else if (period === 'year' && year) {
+//         dateKey = orderDate.getMonth() + 1; // 1-12 for months
+//       }
       
-      // Count orders
-      ordersByDate[dateKey] = (ordersByDate[dateKey] || 0) + 1;
+//       // Count orders
+//       ordersByDate[dateKey] = (ordersByDate[dateKey] || 0) + 1;
       
-      // Sum revenue
-      if (order.paymentDetails && order.paymentDetails.totalAmount) {
-        revenueByDate[dateKey] = (revenueByDate[dateKey] || 0) + order.paymentDetails.totalAmount;
-      }
+//       // Sum revenue
+//       if (order.paymentDetails && order.paymentDetails.totalAmount) {
+//         revenueByDate[dateKey] = (revenueByDate[dateKey] || 0) + order.paymentDetails.totalAmount;
+//       }
       
-      // Count products sold
-      if (order.products && Array.isArray(order.products)) {
-        order.products.forEach(product => {
-          productsByDate[dateKey] = (productsByDate[dateKey] || 0) + product.quantity;
-        });
-      }
-    });
+//       // Count products sold
+//       if (order.products && Array.isArray(order.products)) {
+//         order.products.forEach(product => {
+//           productsByDate[dateKey] = (productsByDate[dateKey] || 0) + product.quantity;
+//         });
+//       }
+//     });
     
-    // Convert to arrays for the frontend
-    const ordersData = Object.keys(ordersByDate).map(key => ({
-      label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
-      count: ordersByDate[key]
-    }));
+//     // Convert to arrays for the frontend
+//     const ordersData = Object.keys(ordersByDate).map(key => ({
+//       label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
+//       count: ordersByDate[key]
+//     }));
     
-    const revenueData = Object.keys(revenueByDate).map(key => ({
-      label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
-      amount: revenueByDate[key]
-    }));
+//     const revenueData = Object.keys(revenueByDate).map(key => ({
+//       label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
+//       amount: revenueByDate[key]
+//     }));
     
-    const productsData = Object.keys(productsByDate).map(key => ({
-      label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
-      count: productsByDate[key]
-    }));
+//     const productsData = Object.keys(productsByDate).map(key => ({
+//       label: period === 'year' ? labels[parseInt(key) - 1] : key.toString(),
+//       count: productsByDate[key]
+//     }));
     
-    // Sort by label if necessary
-    const sortFn = (a, b) => {
-      if (period === 'year') {
-        return labels.indexOf(a.label) - labels.indexOf(b.label);
-      }
-      return parseInt(a.label) - parseInt(b.label);
-    };
+//     // Sort by label if necessary
+//     const sortFn = (a, b) => {
+//       if (period === 'year') {
+//         return labels.indexOf(a.label) - labels.indexOf(b.label);
+//       }
+//       return parseInt(a.label) - parseInt(b.label);
+//     };
     
-    res.json({
-      orders: ordersData.sort(sortFn),
-      revenue: revenueData.sort(sortFn),
-      products: productsData.sort(sortFn)
-    });
+//     res.json({
+//       orders: ordersData.sort(sortFn),
+//       revenue: revenueData.sort(sortFn),
+//       products: productsData.sort(sortFn)
+//     });
     
-  } catch (error) {
-    console.error('Error fetching analytics data:', error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+//   } catch (error) {
+//     console.error('Error fetching analytics data:', error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
 
 
 // Assuming you're using Express.js for your backend
