@@ -1632,7 +1632,7 @@ app.post('/api/add-category', upload.single("categoryImage"), async (req, res) =
 // Get all categories
 app.get('/api/categories', async (req, res) => {
   try {
-    const categories = await Category.find({}, 'categoryId categoryName categoryCode categoryImage'); // Fetch only necessary fields
+    const categories = await Category.find({}, 'categoryId categoryName categoryCode'); // Fetch only necessary fields
     res.status(200).json(categories);
     console.log("cat", categories)
   } catch (error) {
@@ -2605,16 +2605,16 @@ app.delete('/api/products/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-// const razorpay = new Razorpay({
-//   key_id: "rzp_live_D6CyBokqgdaa8c",
-//   key_secret: "45b1JA0OiI4aMC1WOMzMALM6",
-
-// });
 const razorpay = new Razorpay({
-  key_id: "rzp_test_qUmhUFElBiSNIs",
-  key_secret: "wsBV1ts8yJPld9JktATIdOiS",
+  key_id: "rzp_live_D6CyBokqgdaa8c",
+  key_secret: "45b1JA0OiI4aMC1WOMzMALM6",
 
 });
+// const razorpay = new Razorpay({
+//   key_id: "rzp_test_qUmhUFElBiSNIs",
+//   key_secret: "wsBV1ts8yJPld9JktATIdOiS",
+
+// });
 app.post("/api/create-order", async (req, res) => {
   const { amount } = req.body;
 
@@ -2640,10 +2640,6 @@ const orderSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true
-  },
-  razorpayOrderId: {  // ✅ ADD THIS NEW FIELD
-    type: String,
-    required: true
   },
   ShipmentId: {
     type: String,
@@ -2709,43 +2705,34 @@ const orderSchema = new mongoose.Schema({
     size: String,
     image: String
   }],
-  shipping: {  // ✅ ADD SHIPPING FIELD (you're sending this but schema doesn't have it!)
-    courier: String,
-    weight: Number,
-    cost: Number,
-    estimatedDays: Number
-  },
   paymentDetails: {
-    productPrice: {
-      type: Number,
-      required: true
-    },
-    shippingCost: {  // ✅ ADD THIS
-      type: Number,
-      default: 0
-    },
-    totalAmount: {
-      type: Number,
-      required: true
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
-      default: 'pending'
-    },
-    paymentId: {
-      type: String,
-      required: true
-    },
-    paymentSignature: {
-      type: String,
-      required: true
-    },
-    gstNumber: {
-      type: String,
-      default: null
-    }
+  productPrice: {
+    type: Number,
+    required: true
   },
+  totalAmount: {
+    type: Number,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'failed', 'refunded'],
+    default: 'pending'
+  },
+  paymentId: {
+    type: String,
+    required: true
+  },
+  paymentSignature: {
+    type: String,
+    required: true
+  },
+  gstNumber: {
+    type: String,
+    default: null
+  }
+},
+
   orderStatus: {
     type: String,
     enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
@@ -2778,8 +2765,9 @@ orderSchema.virtual('totalItems').get(function () {
   return this.products.reduce((sum, product) => sum + product.quantity, 0);
 });
 
-const Order = mongoose.model('Order', orderSchema);
 
+
+const Order = mongoose.model('Order', orderSchema);
 // app.post('/api/orders/create', async (req, res) => {
 //   try {
 //     // Validate the Razorpay payment signature
@@ -2850,233 +2838,181 @@ const Order = mongoose.model('Order', orderSchema);
 
 
 
-// app.post('/api/orders/create', async (req, res) => {
-//   // Start a session for transaction
-//   const session = await mongoose.startSession();
-//   session.startTransaction();
+app.post('/api/orders/create', async (req, res) => {
+  // Start a session for transaction
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-//   try {
-//     // Extract order details from request body
-//     const {
-//       orderId,
-//       orderDate,
-//       customerId,
-//       customerDetails,
-//       products,
-//       paymentDetails,
-//       orderStatus
-//     } = req.body;
-
-//     console.log('Starting order creation with products:', JSON.stringify(products, null, 2));
-
-//     // Create new order in database
-//     const newOrder = new Order({
-//       orderId,
-//       orderDate,
-//       customerId,
-//       customerDetails: {
-//         shippingAddress: customerDetails.shippingAddress,
-//         billingAddress: customerDetails.billingAddress
-//       },
-//       products: products.map(product => ({
-//         productId: product.productId,
-//         sizeId: product.sizeId,
-//         productName: product.productName,
-//         price: product.price,
-//         quantity: product.quantity,
-//         size: product.size,
-//         image: product.image
-//       })),
-//       paymentDetails: {
-//         productPrice: paymentDetails.productPrice,
-//         totalAmount: paymentDetails.totalAmount,
-//         status: paymentDetails.status,
-//         paymentId: paymentDetails.paymentId,
-//         paymentSignature: paymentDetails.paymentSignature,
-//         gstNumber:paymentDetails.gstNumber,
-//       },
-//       orderStatus,
-//       createdAt: new Date(),
-//       updatedAt: new Date()
-//     });
-
-//     // Save the order with session
-//     const savedOrder = await newOrder.save({ session });
-//     console.log('Order saved successfully:', savedOrder.orderId);
-
-//     // Update product quantities
-//     console.log('Starting quantity updates for products...');
-
-//     for (const product of products) {
-//       console.log(`Processing product: ${product.productId}, size: ${product.sizeId}, quantity: ${product.quantity}`);
-
-//       // Find the product
-//       const productDoc = await Product.findOne({
-//         productId: product.productId
-//       }).session(session);
-//       console.log("findproducts", productDoc);
-//       if (!productDoc) {
-//         console.error(`Product not found: ${product.productId}`);
-//         throw new Error(`Product not found: ${product.productId}`);
-//       }
-
-//       // Find the size index
-//       // const sizeIndex = productDoc.sizes.findIndex(s => s.sizeId === product.sizeId);
-//       const aromaContainingSize = productDoc.aromas?.find(aroma =>
-//         aroma.sizes?.some(size => size.sizeId === product.sizeId)
-//       );
-
-//       // Find the size index within that aroma
-//       const sizeIndex = aromaContainingSize
-//         ? aromaContainingSize.sizes.findIndex(s => s.sizeId === product.sizeId)
-//         : -1;
-//       if (sizeIndex === -1) {
-//         console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
-//         console.log('Available sizes:', JSON.stringify(productDoc.sizes, null, 2));
-//         throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
-//       }
-
-//       // const currentQuantity = productDoc.sizes[sizeIndex].quantity;
-//       // const newQuantity = currentQuantity - product.quantity;
-
-//       // console.log(`Updating quantity for product ${product.productId}:`);
-//       // console.log(`- Current quantity: ${currentQuantity}`);
-//       // console.log(`- Reducing by: ${product.quantity}`);
-//       // console.log(`- New quantity will be: ${newQuantity}`);
-
-//       // if (newQuantity < 0) {
-//       //   throw new Error(
-//       //     `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
-//       //     `Available: ${currentQuantity}, Requested: ${product.quantity}`
-//       //   );
-//       // }
-
-//       // // Update the quantity
-//       // productDoc.sizes[sizeIndex].quantity = newQuantity;
-
-//       // // Save the updated product
-//       // await productDoc.save({ session });
-//       // console.log(`Successfully updated quantity for product ${product.productId}`);
-//       if (sizeIndex === -1) {
-//         console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
-//         console.log('Available sizes:', JSON.stringify(aromaContainingSize.sizes, null, 2));
-//         throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
-//       }
-
-//       // Now you can update the quantity as before
-//       const currentQuantity = aromaContainingSize.sizes[sizeIndex].quantity;
-//       const newQuantity = currentQuantity - product.quantity;
-
-//       console.log(`Updating quantity for product ${product.productId}:`);
-//       console.log(`- Current quantity: ${currentQuantity}`);
-//       console.log(`- Reducing by: ${product.quantity}`);
-//       console.log(`- New quantity will be: ${newQuantity}`);
-
-//       if (newQuantity < 0) {
-//         throw new Error(
-//           `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
-//           `Available: ${currentQuantity}, Requested: ${product.quantity}`
-//         );
-//       }
-
-//       // Update the quantity
-//       aromaContainingSize.sizes[sizeIndex].quantity = newQuantity;
-
-//       // Save the updated product
-//       await productDoc.save({ session });
-//       console.log(`Successfully updated quantity for product ${product.productId}`);
-//     }
-
-//     // Commit the transaction
-//     await session.commitTransaction();
-//     console.log('Transaction committed successfully');
-
-//     // Send email confirmation (commented out as in original code)
-//     // await sendOrderConfirmationEmail(savedOrder);
-//     const customerEmail = savedOrder.customerDetails.billingAddress.email;
-//     if (customerEmail) {
-//       await sendOrderConfirmationEmail(savedOrder, customerEmail);
-//     }
-//     res.status(201).json({
-//       success: true,
-//       orderId: savedOrder.orderId,
-//       message: 'Order created successfully'
-//     });
-
-//   } catch (error) {
-//     console.error('=== Order Creation Failed ===');
-//     console.error('Error message:', error.message);
-//     console.error('Error stack:', error.stack);
-
-//     // Rollback the transaction
-//     await session.abortTransaction();
-//     console.log('Transaction rolled back due to error');
-
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to create order',
-//       error: error.message
-//     });
-
-//   } finally {
-//     // End the session
-//     await session.endSession();
-//     console.log('Session ended');
-//   }
-// });
-app.post("/api/orders/create", async (req, res) => {
   try {
-    const orderData = req.body;
-    
-    // ✅ Generate unique order ID
-    const uniqueOrderId = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-    
-    // ✅ Create new order with generated ID
+    // Extract order details from request body
+    const {
+      orderId,
+      orderDate,
+      customerId,
+      customerDetails,
+      products,
+      paymentDetails,
+      orderStatus
+    } = req.body;
+
+    console.log('Starting order creation with products:', JSON.stringify(products, null, 2));
+
+    // Create new order in database
     const newOrder = new Order({
-      orderId: uniqueOrderId,  // ✅ Use generated unique ID
-      razorpayOrderId: orderData.orderId || orderData.razorpayOrderId,  // ✅ Store Razorpay's order ID
-      orderDate: orderData.orderDate || new Date(),
-      customerId: orderData.customerId,
-      customerDetails: orderData.customerDetails,
-      products: orderData.products,
-      shipping: orderData.shipping,  // ✅ Now schema has this field
-      paymentDetails: {
-        ...orderData.paymentDetails,
-        shippingCost: orderData.paymentDetails.shippingCost || 0
+      orderId,
+      orderDate,
+      customerId,
+      customerDetails: {
+        shippingAddress: customerDetails.shippingAddress,
+        billingAddress: customerDetails.billingAddress
       },
-      orderStatus: orderData.orderStatus || 'confirmed',
-      deliveryStatus: orderData.deliveryStatus || 'pending',
+      products: products.map(product => ({
+        productId: product.productId,
+        sizeId: product.sizeId,
+        productName: product.productName,
+        price: product.price,
+        quantity: product.quantity,
+        size: product.size,
+        image: product.image
+      })),
+      paymentDetails: {
+        productPrice: paymentDetails.productPrice,
+        totalAmount: paymentDetails.totalAmount,
+        status: paymentDetails.status,
+        paymentId: paymentDetails.paymentId,
+        paymentSignature: paymentDetails.paymentSignature,
+        gstNumber:paymentDetails.gstNumber,
+      },
+      orderStatus,
+      createdAt: new Date(),
+      updatedAt: new Date()
     });
 
-    const savedOrder = await newOrder.save();
-    
-    console.log("✅ Order saved:", savedOrder);
-    
+    // Save the order with session
+    const savedOrder = await newOrder.save({ session });
+    console.log('Order saved successfully:', savedOrder.orderId);
+
+    // Update product quantities
+    console.log('Starting quantity updates for products...');
+
+    for (const product of products) {
+      console.log(`Processing product: ${product.productId}, size: ${product.sizeId}, quantity: ${product.quantity}`);
+
+      // Find the product
+      const productDoc = await Product.findOne({
+        productId: product.productId
+      }).session(session);
+      console.log("findproducts", productDoc);
+      if (!productDoc) {
+        console.error(`Product not found: ${product.productId}`);
+        throw new Error(`Product not found: ${product.productId}`);
+      }
+
+      // Find the size index
+      // const sizeIndex = productDoc.sizes.findIndex(s => s.sizeId === product.sizeId);
+      const aromaContainingSize = productDoc.aromas?.find(aroma =>
+        aroma.sizes?.some(size => size.sizeId === product.sizeId)
+      );
+
+      // Find the size index within that aroma
+      const sizeIndex = aromaContainingSize
+        ? aromaContainingSize.sizes.findIndex(s => s.sizeId === product.sizeId)
+        : -1;
+      if (sizeIndex === -1) {
+        console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
+        console.log('Available sizes:', JSON.stringify(productDoc.sizes, null, 2));
+        throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
+      }
+
+      // const currentQuantity = productDoc.sizes[sizeIndex].quantity;
+      // const newQuantity = currentQuantity - product.quantity;
+
+      // console.log(`Updating quantity for product ${product.productId}:`);
+      // console.log(`- Current quantity: ${currentQuantity}`);
+      // console.log(`- Reducing by: ${product.quantity}`);
+      // console.log(`- New quantity will be: ${newQuantity}`);
+
+      // if (newQuantity < 0) {
+      //   throw new Error(
+      //     `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
+      //     `Available: ${currentQuantity}, Requested: ${product.quantity}`
+      //   );
+      // }
+
+      // // Update the quantity
+      // productDoc.sizes[sizeIndex].quantity = newQuantity;
+
+      // // Save the updated product
+      // await productDoc.save({ session });
+      // console.log(`Successfully updated quantity for product ${product.productId}`);
+      if (sizeIndex === -1) {
+        console.error(`Size not found for product: ${product.productId}, size: ${product.sizeId}`);
+        console.log('Available sizes:', JSON.stringify(aromaContainingSize.sizes, null, 2));
+        throw new Error(`Size ${product.sizeId} not found for product ${product.productId}`);
+      }
+
+      // Now you can update the quantity as before
+      const currentQuantity = aromaContainingSize.sizes[sizeIndex].quantity;
+      const newQuantity = currentQuantity - product.quantity;
+
+      console.log(`Updating quantity for product ${product.productId}:`);
+      console.log(`- Current quantity: ${currentQuantity}`);
+      console.log(`- Reducing by: ${product.quantity}`);
+      console.log(`- New quantity will be: ${newQuantity}`);
+
+      if (newQuantity < 0) {
+        throw new Error(
+          `Insufficient quantity for product ${product.productName} size ${product.size}. ` +
+          `Available: ${currentQuantity}, Requested: ${product.quantity}`
+        );
+      }
+
+      // Update the quantity
+      aromaContainingSize.sizes[sizeIndex].quantity = newQuantity;
+
+      // Save the updated product
+      await productDoc.save({ session });
+      console.log(`Successfully updated quantity for product ${product.productId}`);
+    }
+
+    // Commit the transaction
+    await session.commitTransaction();
+    console.log('Transaction committed successfully');
+
+    // Send email confirmation (commented out as in original code)
+    // await sendOrderConfirmationEmail(savedOrder);
+    const customerEmail = savedOrder.customerDetails.billingAddress.email;
+    if (customerEmail) {
+      await sendOrderConfirmationEmail(savedOrder, customerEmail);
+    }
     res.status(201).json({
       success: true,
-      orderId: savedOrder.orderId,  // ✅ Return the generated orderId
-      message: "Order created successfully"
+      orderId: savedOrder.orderId,
+      message: 'Order created successfully'
     });
-    
+
   } catch (error) {
-    console.error("❌ Error creating order:", error);
-    
-    if (error.code === 11000) {
-      // Duplicate key error
-      return res.status(400).json({
-        success: false,
-        message: "Order ID already exists",
-        error: error.message
-      });
-    }
-    
+    console.error('=== Order Creation Failed ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+
+    // Rollback the transaction
+    await session.abortTransaction();
+    console.log('Transaction rolled back due to error');
+
     res.status(500).json({
       success: false,
-      message: "Failed to create order",
+      message: 'Failed to create order',
       error: error.message
     });
+
+  } finally {
+    // End the session
+    await session.endSession();
+    console.log('Session ended');
   }
 });
+
 
 async function sendOrderConfirmationEmail(order, customerEmail) {
   // Create a transporter for sending the email
