@@ -1369,7 +1369,7 @@ const storage = multer.diskStorage({
   }
 });
 const fileFilter = (req, file, cb) => {
-  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF|JFIF)$/)) {
+  if (!file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
     return cb(new Error('Only image files are allowed!'), false);
   }
   cb(null, true);
@@ -1917,7 +1917,7 @@ app.post('/api/add-product', upload.fields([
       keyFeatures: req.body.keyFeatures,
       ingredients: req.body.ingredients,
       howToUse: req.body.howToUse,
-      customerReviews: req.body.customerReviews 
+      customerReviews: req.body.customerReviews ? JSON.parse(req.body.customerReviews) : []
     });
 
     await product.save();
